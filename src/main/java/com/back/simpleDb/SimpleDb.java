@@ -8,6 +8,7 @@ public class SimpleDb {
     private final String PASSWORD;
     private final String DB_NAME;
     private boolean isDev;
+    private Sql connectedSQL;
 
     public SimpleDb(String URL, String USERNAME, String PASSWORD, String DB_NAME){
         this.URL = URL;
@@ -25,13 +26,16 @@ public class SimpleDb {
             connection = DriverManager.getConnection(connectionString, USERNAME, PASSWORD);
         } catch (SQLException e){
             System.err.println("DB 연결 중 에러가 발생했습니다.");
+            e.printStackTrace();
         }
 
         return connection;
     }
 
     public Sql genSql(){
-        return new Sql(this);
+        Sql sql = new Sql(connectDB());
+        connectedSQL = sql;
+        return sql;
     }
 
     public void setDevMode(boolean bool){
@@ -42,6 +46,7 @@ public class SimpleDb {
         try (Statement statement = connectDB().createStatement()){
             statement.execute(query);
         } catch (SQLException e){
+            System.out.println("쿼리 실행 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
     }
@@ -53,7 +58,16 @@ public class SimpleDb {
             preparedStatement.setBoolean(3, isBlind);
             preparedStatement.executeUpdate();
         } catch (SQLException e){
+            System.out.println("쿼리 실행 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
+    }
+
+    public Connection getConnection(){
+        return connectDB();
+    }
+
+    public void close(){
+        connectedSQL.close();
     }
 }

@@ -6,13 +6,21 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class Sql {
+    private Connection connection;
     private StringBuilder query;
     private List<Object> params = new ArrayList<>();
-    private Connection connection;
 
-    public Sql(SimpleDb simpleDb){
-        this.connection = simpleDb.connectDB();
+    public Sql(Connection connection){
+        this.connection = connection;
         this.query = new StringBuilder();
+    }
+
+    public void close(){
+        try {
+            this.connection.close();
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     public Sql append(String s){
@@ -28,7 +36,7 @@ public class Sql {
 
     public PreparedStatement makeQuery(){
         try {
-            PreparedStatement preparedStatement = this.connection.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement preparedStatement = connection.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
             int index = 1;
             for(Object obj : params){
                 preparedStatement.setObject(index++, obj);
