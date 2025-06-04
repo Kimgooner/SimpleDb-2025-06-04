@@ -141,7 +141,7 @@ public class Sql {
                 return resultSet.getLong(1);
             }
         } catch (SQLException e) {
-            System.out.println("SELECT NOW() 에러");
+            System.out.println("SELECT Long 에러");
         }
         return null;
     }
@@ -153,7 +153,7 @@ public class Sql {
                 return resultSet.getString(1);
             }
         } catch (SQLException e) {
-            System.out.println("SELECT NOW() 에러");
+            System.out.println("SELECT String 에러");
         }
         return null;
     }
@@ -165,7 +165,36 @@ public class Sql {
                 return resultSet.getBoolean(1);
             }
         } catch (SQLException e) {
-            System.out.println("SELECT NOW() 에러");
+            System.out.println("SELECT Boolean 에러");
+        }
+        return null;
+    }
+
+    public Sql appendIn(String s, Object... params){
+        // makeQuery()를 이미 구현했으므로, query문에 ?를 파라미터 개수만큼 추가하는 형태로 변경
+        StringBuilder questionMark = new StringBuilder();
+        questionMark.append("\\?");
+        for(int i = 1; i < params.length; i++){
+            questionMark.append(", ?");
+        }
+        String altered = s;
+        altered = altered.replaceAll("\\?", questionMark.toString());
+
+        this.query.append(altered).append(" ");
+        this.params.addAll(Arrays.asList(params));
+        return this;
+    }
+
+    public List<Long> selectLongs(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Long> longList = new ArrayList<>();
+            while (resultSet.next()){
+                longList.add(resultSet.getLong(1));
+            }
+            return longList;
+        } catch (SQLException e) {
+            System.out.println("SELECT Longs, ORDER BY FILED 에러");
         }
         return null;
     }
