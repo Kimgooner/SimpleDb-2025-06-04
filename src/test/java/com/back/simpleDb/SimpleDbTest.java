@@ -3,6 +3,7 @@ package com.back.simpleDb;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -161,5 +162,102 @@ public class SimpleDbTest {
             assertThat(articleRow.get("modifiedDate")).isNotNull();
             assertThat(articleRow.get("isBlind")).isEqualTo(false);
         });
+    }
+
+    @Test
+    @DisplayName("selectRow")
+    public void t005() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT *
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT * FROM article WHERE id = 1");
+        Map<String, Object> articleRow = sql.selectRow();
+
+        assertThat(articleRow.get("id")).isEqualTo(1L);
+        assertThat(articleRow.get("title")).isEqualTo("제목1");
+        assertThat(articleRow.get("body")).isEqualTo("내용1");
+        assertThat(articleRow.get("createdDate")).isInstanceOf(LocalDateTime.class);
+        assertThat(articleRow.get("createdDate")).isNotNull();
+        assertThat(articleRow.get("modifiedDate")).isInstanceOf(LocalDateTime.class);
+        assertThat(articleRow.get("modifiedDate")).isNotNull();
+        assertThat(articleRow.get("isBlind")).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("selectDatetime")
+    public void t006() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT NOW()
+        */
+        sql.append("SELECT NOW()");
+
+        LocalDateTime datetime = sql.selectDatetime();
+
+        long diff = ChronoUnit.SECONDS.between(datetime, LocalDateTime.now());
+
+        assertThat(diff).isLessThanOrEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("selectLong")
+    public void t007() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT id
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT id")
+                .append("FROM article")
+                .append("WHERE id = 1");
+
+        Long id = sql.selectLong();
+
+        assertThat(id).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("selectString")
+    public void t008() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT title
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT title")
+                .append("FROM article")
+                .append("WHERE id = 1");
+
+        String title = sql.selectString();
+
+        assertThat(title).isEqualTo("제목1");
+    }
+
+    @Test
+    @DisplayName("selectBoolean")
+    public void t009() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT isBlind
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT isBlind")
+                .append("FROM article")
+                .append("WHERE id = 1");
+
+        Boolean isBlind = sql.selectBoolean();
+
+        assertThat(isBlind).isEqualTo(false);
     }
 }

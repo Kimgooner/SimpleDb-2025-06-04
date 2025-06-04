@@ -1,6 +1,7 @@
 package com.back.simpleDb;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Sql {
@@ -93,6 +94,78 @@ public class Sql {
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("SELECT * 에러");
+        }
+        return null;
+    }
+
+    public Map<String, Object> selectRow(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int column_index = resultSetMetaData.getColumnCount();
+
+            while (resultSet.next()) {
+                Map<String, Object> articleRowMap = new HashMap<>();
+                for(int i = 1; i <= column_index; i++) {
+                    String columnName = resultSetMetaData.getColumnName(i);
+                    Object columnValue = resultSet.getObject(i);
+                    //System.out.println(columnName + ", " + columnValue); 테스트
+                    articleRowMap.put(columnName, columnValue);
+                }
+                return articleRowMap;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("SELECT ROW 에러");
+        }
+        return null;
+    }
+
+    public LocalDateTime selectDatetime(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                return resultSet.getTimestamp(1).toLocalDateTime();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("SELECT NOW() 에러");
+        }
+        return null;
+    }
+
+    public Long selectLong(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                return resultSet.getLong(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("SELECT NOW() 에러");
+        }
+        return null;
+    }
+
+    public String selectString(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                return resultSet.getString(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("SELECT NOW() 에러");
+        }
+        return null;
+    }
+
+    public Boolean selectBoolean(){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                return resultSet.getBoolean(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("SELECT NOW() 에러");
         }
         return null;
     }
