@@ -3,17 +3,18 @@ package com.back.simpleDb;
 import java.sql.*;
 
 public class SimpleDb {
-    private String URL;
-    private String USERNAME;
-    private String PASSWORD;
-    private String DB_NAME;
-    private boolean isDev = false;
+    private final String URL;
+    private final String USERNAME;
+    private final String PASSWORD;
+    private final String DB_NAME;
+    private boolean isDev;
 
     public SimpleDb(String URL, String USERNAME, String PASSWORD, String DB_NAME){
         this.URL = URL;
         this.USERNAME = USERNAME;
         this.PASSWORD = PASSWORD;
         this.DB_NAME = DB_NAME;
+        this.isDev = false;
     }
 
     public Connection connectDB(){

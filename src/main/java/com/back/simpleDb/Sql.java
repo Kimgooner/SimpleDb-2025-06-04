@@ -1,5 +1,6 @@
 package com.back.simpleDb;
 
+import java.lang.reflect.Field;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -193,6 +194,64 @@ public class Sql {
                 longList.add(resultSet.getLong(1));
             }
             return longList;
+        } catch (SQLException e) {
+            System.out.println("SELECT Longs, ORDER BY FILED 에러");
+        }
+        return null;
+    }
+
+    public <T> List<T> selectRows(Class<T> tClass){
+        List<T> tList = new ArrayList<>();
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int columnCount = resultSetMetaData.getColumnCount();
+
+            while (resultSet.next()) {
+                try {
+                    T instance = tClass.getDeclaredConstructor().newInstance();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = resultSetMetaData.getColumnName(i);
+                        Object columnValue = resultSet.getObject(i);
+
+                        Field field = tClass.getDeclaredField(columnName);
+                        field.setAccessible(true);
+                        field.set(instance, columnValue);
+                    }
+                    tList.add(instance);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            return tList;
+        } catch (SQLException e) {
+            System.out.println("SELECT Longs, ORDER BY FILED 에러");
+        }
+        return null;
+    }
+
+    public <T> T selectRow(Class<T> tClass){
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int columnCount = resultSetMetaData.getColumnCount();
+
+            while (resultSet.next()) {
+                try {
+                    T instance = tClass.getDeclaredConstructor().newInstance();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = resultSetMetaData.getColumnName(i);
+                        Object columnValue = resultSet.getObject(i);
+
+                        Field field = tClass.getDeclaredField(columnName);
+                        field.setAccessible(true);
+                        field.set(instance, columnValue);
+                    }
+                    return instance;
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         } catch (SQLException e) {
             System.out.println("SELECT Longs, ORDER BY FILED 에러");
         }
