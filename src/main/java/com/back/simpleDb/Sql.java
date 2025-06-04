@@ -1,9 +1,7 @@
 package com.back.simpleDb;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Sql {
     private StringBuilder query;
@@ -49,7 +47,7 @@ public class Sql {
                 return resultSet.getInt(1);
             }
         } catch (SQLException e){
-            e.printStackTrace();
+            System.out.println("INSERT 에러");
         }
         return -1;
     }
@@ -59,8 +57,43 @@ public class Sql {
             int affected = preparedStatement.executeUpdate();
             return affected;
         } catch (SQLException e){
-            e.printStackTrace();
+            System.out.println("UPDATE 에러");
         }
         return -1;
+    }
+
+    public int delete(){
+        try (PreparedStatement preparedStatement = makeQuery()){
+            int affected = preparedStatement.executeUpdate();
+            return affected;
+        } catch (SQLException e){
+            System.out.println("DELETE 에러");
+        }
+        return -1;
+    }
+
+    public List<Map<String, Object>> selectRows() {
+        try (PreparedStatement preparedStatement = makeQuery()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int column_index = resultSetMetaData.getColumnCount();
+
+            List<Map<String, Object>> articleRows = new ArrayList<>();
+            while (resultSet.next()) {
+                Map<String, Object> articleRowMap = new HashMap<>();
+                for(int i = 1; i <= column_index; i++) {
+                    String columnName = resultSetMetaData.getColumnName(i);
+                    Object columnValue = resultSet.getObject(i);
+                    //System.out.println(columnName + ", " + columnValue); 테스트
+                    articleRowMap.put(columnName, columnValue);
+                }
+                articleRows.add(articleRowMap);
+            }
+            return articleRows;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("SELECT * 에러");
+        }
+        return null;
     }
 }
