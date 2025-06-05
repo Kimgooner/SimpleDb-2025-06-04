@@ -68,6 +68,8 @@ public class SimpleDb {
         } catch (SQLException e){
             System.out.println("이미 닫힌 연결입니다.");
             e.printStackTrace();
+        } finally {
+            connectionThreadLocal.remove();
         }
     }
 
