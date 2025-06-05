@@ -8,7 +8,7 @@ public class SimpleDb {
     private final String PASSWORD;
     private final String DB_NAME;
     private boolean isDev;
-    private Sql connectedSQL;
+    private static final ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
 
     public SimpleDb(String URL, String USERNAME, String PASSWORD, String DB_NAME){
         this.URL = URL;
@@ -18,24 +18,23 @@ public class SimpleDb {
         this.isDev = false;
     }
 
-    public Connection connectDB(){
-        String connectionString = "jdbc:mysql://" + URL + "/" + DB_NAME;
-        Connection connection = null;
-
+    public Connection connectDB() { //쓰레드 로컬 사용하는 로직으로 변경.
+        String connectionURL = "jdbc:mysql://" + URL + "/" + DB_NAME;
+        Connection connection = connectionThreadLocal.get(); //남아 있는 연결이 있다면 사용
         try {
-            connection = DriverManager.getConnection(connectionString, USERNAME, PASSWORD);
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(connectionURL, USERNAME, PASSWORD);
+                connectionThreadLocal.set(connection);
+            }
         } catch (SQLException e){
-            System.err.println("DB 연결 중 에러가 발생했습니다.");
+            System.out.println("Connection을 생성하는 데 문제가 발생했습니다.");
             e.printStackTrace();
         }
-
         return connection;
     }
 
-    public Sql genSql(){
-        Sql sql = new Sql(connectDB());
-        connectedSQL = sql;
-        return sql;
+    public Sql genSql() {
+        return new Sql(connectDB());
     }
 
     public void setDevMode(boolean bool){
@@ -63,11 +62,41 @@ public class SimpleDb {
         }
     }
 
-    public Connection getConnection(){
-        return connectDB();
+    public void close(){
+        try {
+            connectDB().close();
+        } catch (SQLException e){
+            System.out.println("이미 닫힌 연결입니다.");
+            e.printStackTrace();
+        }
     }
 
-    public void close(){
-        connectedSQL.close();
+    public void startTransaction(){
+        try {
+            connectDB().setAutoCommit(false);
+        } catch (SQLException e){
+            System.out.println("트랜잭션을 시작하는데 문제가 발생했습니다.");
+            e.printStackTrace();
+        }
+    }
+
+    public void rollback(){
+        try {
+            connectDB().rollback();
+            connectDB().setAutoCommit(true);
+        } catch (SQLException e){
+            System.out.println("이전 세이브포인트로 돌아가는데 문제가 발생했습니다.");
+            e.printStackTrace();
+        }
+    }
+
+    public void commit(){
+        try {
+            connectDB().commit();
+            connectDB().setAutoCommit(true);
+        } catch (SQLException e){
+            System.out.println("Commit 과정에서 문제가 발생했습니다.");
+            e.printStackTrace();
+        }
     }
 }

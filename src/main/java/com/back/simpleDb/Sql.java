@@ -15,14 +15,6 @@ public class Sql {
         this.query = new StringBuilder();
     }
 
-    public void close(){
-        try {
-            this.connection.close();
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
     public Sql append(String s){
         this.query.append(s).append(" ");
         return this;
